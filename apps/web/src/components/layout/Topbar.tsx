@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { clearQueryCache } from '@/lib/providers';
 
 interface TopbarProps {
   onMobileMenuOpen: () => void;
@@ -30,7 +31,8 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
   useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
-    await authService.logout();
+    try { await authService.logout(); } catch {}
+    clearQueryCache();
     clearAuth();
     router.push('/login');
   };
@@ -62,12 +64,9 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
       >
         <Menu size={18} />
       </button>
-
       <span className="lg:hidden text-sm font-semibold text-slate-900 dark:text-white">ProjectFlow</span>
-
       <div className="flex-1" />
 
-      {/* Theme picker */}
       <DropdownMenu>
         <DropdownMenuTrigger className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none">
           <ThemeIcon size={16} />
@@ -76,20 +75,14 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
           <p className="px-2 py-1.5 text-xs text-slate-400">Appearance</p>
           <DropdownMenuSeparator />
           {themes.map(({ value, label, icon: Icon }) => (
-            <DropdownMenuItem
-              key={value}
-              className="gap-2 text-sm cursor-pointer"
-              onClick={() => setTheme(value)}
-            >
-              <Icon size={14} />
-              {label}
+            <DropdownMenuItem key={value} className="gap-2 text-sm cursor-pointer" onClick={() => setTheme(value)}>
+              <Icon size={14} />{label}
               {mounted && theme === value && <Check size={13} className="ml-auto text-slate-500" />}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Language picker */}
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none">
           <Languages size={15} />
@@ -99,11 +92,7 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
           <p className="px-2 py-1.5 text-xs text-slate-400">Language</p>
           <DropdownMenuSeparator />
           {languages.map(({ value, label }) => (
-            <DropdownMenuItem
-              key={value}
-              className="gap-2 text-sm cursor-pointer"
-              onClick={() => setLocale(value)}
-            >
+            <DropdownMenuItem key={value} className="gap-2 text-sm cursor-pointer" onClick={() => setLocale(value as 'en' | 'es')}>
               {label}
               {locale === value && <Check size={13} className="ml-auto text-slate-500" />}
             </DropdownMenuItem>
@@ -111,7 +100,6 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* User menu */}
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors outline-none ml-1">
           <div className="h-7 w-7 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
@@ -129,10 +117,7 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
             <p className="text-xs text-slate-400 truncate mt-0.5">{user?.email}</p>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="gap-2 cursor-pointer text-sm"
-            onClick={() => router.push('/profile')}
-          >
+          <DropdownMenuItem className="gap-2 cursor-pointer text-sm" onClick={() => router.push('/profile')}>
             <User size={14} /> Profile
           </DropdownMenuItem>
           <DropdownMenuSeparator />

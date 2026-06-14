@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { projectsService } from '@/lib/services/projects.service';
 import { tasksService } from '@/lib/services/tasks.service';
+import { useAuthStore } from '@/store/auth.store';
 import { TaskStatus, TaskPriority } from '@/types';
 
 const STATUSES: TaskStatus[] = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE'];
@@ -38,6 +39,7 @@ export default function ProjectBoardPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
 
   const { data: project, isLoading: loadingProject } = useQuery({
@@ -50,14 +52,20 @@ export default function ProjectBoardPage() {
     queryFn: () => tasksService.getByProject(projectId),
   });
 
-  const form = useForm<{ title: string; description?: string; priority: TaskPriority }>();
+  const form = useForm<{
+    title: string;
+    description?: string;
+    priority: TaskPriority;
+    assignToMe: boolean;
+  }>({ defaultValues: { priority: 'MEDIUM', assignToMe: true } });
 
   const createMutation = useMutation({
     mutationFn: (data: any) => tasksService.create(projectId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'mine'] });
       toast.success('Task created');
-      form.reset();
+      form.reset({ priority: 'MEDIUM', assignToMe: true });
       setOpen(false);
     },
     onError: () => toast.error('Failed to create task'),
@@ -66,8 +74,21 @@ export default function ProjectBoardPage() {
   const updateMutation = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: TaskStatus }) =>
       tasksService.update(taskId, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks', projectId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'mine'] });
+    },
   });
+
+  const handleCreate = (data: any) => {
+    const payload = {
+      title: data.title,
+      description: data.description || undefined,
+      priority: data.priority,
+      assigneeId: data.assignToMe ? user?.id : undefined,
+    };
+    createMutation.mutate(payload);
+  };
 
   const tasksByStatus = (status: TaskStatus) => tasks?.filter((t) => t.status === status) ?? [];
 
@@ -91,7 +112,6 @@ export default function ProjectBoardPage() {
           }
         />
 
-        {/* Kanban board */}
         <div className="flex gap-4 overflow-x-auto pb-6">
           {STATUSES.map((status) => (
             <div key={status} className="shrink-0 w-72">
@@ -159,7 +179,7 @@ export default function ProjectBoardPage() {
             <DialogHeader>
               <DialogTitle className="text-base font-semibold">{t('createTask')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 mt-2">
+            <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4 mt-2">
               <div className="space-y-1.5">
                 <Label className="text-sm">{t('taskTitle')}</Label>
                 <Input placeholder={t('taskTitlePlaceholder')} {...form.register('title', { required: true })} />
@@ -172,7 +192,6 @@ export default function ProjectBoardPage() {
                 <Label className="text-sm">{t('priority')}</Label>
                 <select
                   {...form.register('priority')}
-                  defaultValue="MEDIUM"
                   className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white"
                 >
                   <option value="LOW">Low</option>
@@ -181,6 +200,14 @@ export default function ProjectBoardPage() {
                   <option value="URGENT">Urgent</option>
                 </select>
               </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...form.register('assignToMe')}
+                  className="rounded border-slate-300"
+                />
+                <span className="text-sm text-slate-700 dark:text-slate-300">Assign to me</span>
+              </label>
               <div className="flex gap-2 justify-end pt-1">
                 <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
                 <Button type="submit" size="sm" disabled={createMutation.isPending}>{t('createTask')}</Button>

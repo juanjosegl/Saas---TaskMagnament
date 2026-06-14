@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 import { authService } from '@/lib/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { useRedirectIfAuth } from '@/hooks/useAuth';
+import { clearQueryCache } from '@/lib/providers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +35,7 @@ export default function LoginPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: authService.login,
     onSuccess: ({ user, accessToken }) => {
+      clearQueryCache();
       setAuth(user, accessToken);
       router.push('/dashboard');
     },
@@ -50,14 +52,14 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit((data) => mutate(data))} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">{t('email')}</Label>
-              <Input id="email" type="email" placeholder={t('emailPlaceholder')} {...register('email')}
+              <Label className="text-slate-700 dark:text-slate-300">{t('email')}</Label>
+              <Input type="email" placeholder={t('emailPlaceholder')} {...register('email')}
                 className="dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
               {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">{t('password')}</Label>
-              <Input id="password" type="password" placeholder="••••••••" {...register('password')}
+              <Label className="text-slate-700 dark:text-slate-300">{t('password')}</Label>
+              <Input type="password" placeholder="••••••••" {...register('password')}
                 className="dark:bg-slate-800 dark:border-slate-700 dark:text-white" />
               {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
             </div>
