@@ -10,6 +10,10 @@ export const tasksService = {
     const res = await api.get<ApiResponse<Task[]>>(`/projects/${projectId}/tasks`);
     return res.data.data;
   },
+  async getOne(taskId: string) {
+    const res = await api.get<ApiResponse<Task & { comments: any[] }>>(`/tasks/${taskId}`);
+    return res.data.data;
+  },
   async update(taskId: string, data: Partial<Task>) {
     const res = await api.patch<ApiResponse<Task>>(`/tasks/${taskId}`, data);
     return res.data.data;

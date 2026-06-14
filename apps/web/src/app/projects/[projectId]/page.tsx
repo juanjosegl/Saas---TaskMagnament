@@ -5,11 +5,10 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Plus, ArrowLeft, CheckSquare } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { EmptyState } from '@/components/shared/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +21,14 @@ import { tasksService } from '@/lib/services/tasks.service';
 import { TaskStatus, TaskPriority } from '@/types';
 
 const STATUSES: TaskStatus[] = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE'];
+
+const STATUS_COLORS: Record<TaskStatus, string> = {
+  BACKLOG:     'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800',
+  TODO:        'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/50',
+  IN_PROGRESS: 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/50',
+  IN_REVIEW:   'bg-purple-50/50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/50',
+  DONE:        'bg-green-50/50 dark:bg-green-950/20 border-green-100 dark:border-green-900/50',
+};
 
 export default function ProjectBoardPage() {
   const t = useTranslations('tasks');
@@ -64,17 +71,9 @@ export default function ProjectBoardPage() {
 
   const tasksByStatus = (status: TaskStatus) => tasks?.filter((t) => t.status === status) ?? [];
 
-  const STATUS_COLORS: Record<TaskStatus, string> = {
-    BACKLOG:     'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800',
-    TODO:        'bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/50',
-    IN_PROGRESS: 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/50',
-    IN_REVIEW:   'bg-purple-50/50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/50',
-    DONE:        'bg-green-50/50 dark:bg-green-950/20 border-green-100 dark:border-green-900/50',
-  };
-
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-full">
+      <div className="p-6 lg:p-8">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white mb-5 transition-colors"
@@ -93,14 +92,12 @@ export default function ProjectBoardPage() {
         />
 
         {/* Kanban board */}
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-6">
           {STATUSES.map((status) => (
             <div key={status} className="shrink-0 w-72">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <StatusBadge value={status} label={ts(status as any)} />
-                  <span className="text-xs text-slate-400">{tasksByStatus(status).length}</span>
-                </div>
+              <div className="flex items-center gap-2 mb-3">
+                <StatusBadge value={status} label={ts(status as any)} />
+                <span className="text-xs text-slate-400">{tasksByStatus(status).length}</span>
               </div>
 
               <div className={`rounded-lg border p-2 space-y-2 min-h-[200px] ${STATUS_COLORS[status]}`}>
@@ -112,23 +109,34 @@ export default function ProjectBoardPage() {
                   </div>
                 ) : (
                   tasksByStatus(status).map((task) => (
-                    <Card key={task.id} className="border border-slate-200 dark:border-slate-700 shadow-none bg-white dark:bg-slate-900">
+                    <Card
+                      key={task.id}
+                      className="border border-slate-200 dark:border-slate-700 shadow-none bg-white dark:bg-slate-900 cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+                      onClick={() => router.push(`/projects/${projectId}/tasks/${task.id}`)}
+                    >
                       <CardContent className="p-3">
-                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2 leading-snug">{task.title}</p>
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mb-2 leading-snug">
+                          {task.title}
+                        </p>
                         <div className="flex items-center justify-between">
                           <StatusBadge value={task.priority} type="priority" label={tp(task.priority as any)} />
-                          {task.assignee && (
-                            <Avatar className="h-5 w-5">
-                              <AvatarFallback className="text-[10px] bg-slate-200 dark:bg-slate-700">
-                                {task.assignee.name?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {(task._count?.comments ?? 0) > 0 && (
+                              <span className="text-xs text-slate-400">{task._count?.comments} 💬</span>
+                            )}
+                            {task.assignee && (
+                              <Avatar className="h-5 w-5">
+                                <AvatarFallback className="text-[10px] bg-slate-200 dark:bg-slate-700">
+                                  {task.assignee.name?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                          </div>
                         </div>
-                        {/* Move to next status */}
                         {status !== 'DONE' && (
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const next = STATUSES[STATUSES.indexOf(status) + 1];
                               updateMutation.mutate({ taskId: task.id, status: next });
                             }}
