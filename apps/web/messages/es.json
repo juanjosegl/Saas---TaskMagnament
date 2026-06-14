@@ -23,6 +23,80 @@
     "noTasksAssigned": "Aún no tienes tareas asignadas.",
     "noRecentTasks": "Sin tareas recientes."
   },
+  "teams": {
+    "title": "Equipos",
+    "newTeam": "Nuevo Equipo",
+    "noTeams": "Aún no perteneces a ningún equipo.",
+    "noTeamsDesc": "Crea un equipo para empezar a colaborar.",
+    "members": "miembros",
+    "projects": "proyectos",
+    "createTeam": "Crear Equipo",
+    "teamName": "Nombre del equipo",
+    "teamNamePlaceholder": "Ej. Ingeniería",
+    "description": "Descripción",
+    "descriptionPlaceholder": "¿En qué trabaja este equipo?",
+    "inviteMember": "Invitar miembro",
+    "email": "Correo electrónico",
+    "role": "Rol",
+    "invite": "Enviar invitación",
+    "manage": "Gestionar",
+    "noMembers": "Sin miembros aún."
+  },
+  "projects": {
+    "title": "Proyectos",
+    "newProject": "Nuevo Proyecto",
+    "noProjects": "No hay proyectos en este equipo aún.",
+    "noProjectsDesc": "Crea el primer proyecto para comenzar.",
+    "createProject": "Crear Proyecto",
+    "projectName": "Nombre del proyecto",
+    "projectNamePlaceholder": "Ej. Rediseño del sitio web",
+    "description": "Descripción",
+    "descriptionPlaceholder": "¿De qué trata este proyecto?",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "status": "Estado",
+    "tasks": "tareas",
+    "viewBoard": "Ver tablero",
+    "active": "Activo",
+    "archived": "Archivado",
+    "completed": "Completado"
+  },
+  "tasks": {
+    "title": "Mis Tareas",
+    "newTask": "Nueva Tarea",
+    "noTasks": "No tienes tareas asignadas.",
+    "noTasksDesc": "Las tareas asignadas a ti aparecerán aquí.",
+    "createTask": "Crear Tarea",
+    "taskTitle": "Título",
+    "taskTitlePlaceholder": "Ej. Implementar página de login",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Describe la tarea...",
+    "priority": "Prioridad",
+    "status": "Estado",
+    "assignee": "Responsable",
+    "dueDate": "Fecha límite",
+    "project": "Proyecto",
+    "comments": "comentarios",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Eliminar esta tarea?"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo como leído",
+    "noNotifications": "Sin notificaciones.",
+    "noNotificationsDesc": "Estás al día con todo.",
+    "unread": "Sin leer"
+  },
+  "profile": {
+    "title": "Perfil",
+    "editProfile": "Editar perfil",
+    "fullName": "Nombre completo",
+    "email": "Correo electrónico",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "saved": "Perfil actualizado correctamente."
+  },
   "auth": {
     "appName": "ProjectFlow",
     "signIn": "Iniciar sesión",
@@ -52,7 +126,10 @@
     "TODO": "Por hacer",
     "IN_PROGRESS": "En progreso",
     "IN_REVIEW": "En revisión",
-    "DONE": "Completado"
+    "DONE": "Completado",
+    "ACTIVE": "Activo",
+    "ARCHIVED": "Archivado",
+    "COMPLETED": "Completado"
   },
   "priority": {
     "LOW": "Baja",
@@ -70,6 +147,8 @@
     "back": "Volver",
     "actions": "Acciones",
     "confirm": "Confirmar",
-    "search": "Buscar..."
+    "search": "Buscar...",
+    "close": "Cerrar",
+    "optional": "opcional"
   }
 }

@@ -23,6 +23,80 @@
     "noTasksAssigned": "No tasks assigned yet.",
     "noRecentTasks": "No recent tasks."
   },
+  "teams": {
+    "title": "Teams",
+    "newTeam": "New Team",
+    "noTeams": "You are not part of any team yet.",
+    "noTeamsDesc": "Create a team to start collaborating.",
+    "members": "members",
+    "projects": "projects",
+    "createTeam": "Create Team",
+    "teamName": "Team name",
+    "teamNamePlaceholder": "e.g. Engineering",
+    "description": "Description",
+    "descriptionPlaceholder": "What does this team work on?",
+    "inviteMember": "Invite Member",
+    "email": "Email",
+    "role": "Role",
+    "invite": "Send Invitation",
+    "manage": "Manage",
+    "noMembers": "No members yet."
+  },
+  "projects": {
+    "title": "Projects",
+    "newProject": "New Project",
+    "noProjects": "No projects in this team yet.",
+    "noProjectsDesc": "Create the first project to get started.",
+    "createProject": "Create Project",
+    "projectName": "Project name",
+    "projectNamePlaceholder": "e.g. Website Redesign",
+    "description": "Description",
+    "descriptionPlaceholder": "What is this project about?",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "status": "Status",
+    "tasks": "tasks",
+    "viewBoard": "View Board",
+    "active": "Active",
+    "archived": "Archived",
+    "completed": "Completed"
+  },
+  "tasks": {
+    "title": "My Tasks",
+    "newTask": "New Task",
+    "noTasks": "No tasks assigned to you.",
+    "noTasksDesc": "Tasks assigned to you will appear here.",
+    "createTask": "Create Task",
+    "taskTitle": "Title",
+    "taskTitlePlaceholder": "e.g. Implement login page",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe the task...",
+    "priority": "Priority",
+    "status": "Status",
+    "assignee": "Assignee",
+    "dueDate": "Due date",
+    "project": "Project",
+    "comments": "comments",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this task?"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications yet.",
+    "noNotificationsDesc": "You are all caught up.",
+    "unread": "Unread"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "fullName": "Full name",
+    "email": "Email",
+    "saveChanges": "Save changes",
+    "saving": "Saving...",
+    "saved": "Profile updated successfully."
+  },
   "auth": {
     "appName": "ProjectFlow",
     "signIn": "Sign in",
@@ -52,7 +126,10 @@
     "TODO": "To Do",
     "IN_PROGRESS": "In Progress",
     "IN_REVIEW": "In Review",
-    "DONE": "Done"
+    "DONE": "Done",
+    "ACTIVE": "Active",
+    "ARCHIVED": "Archived",
+    "COMPLETED": "Completed"
   },
   "priority": {
     "LOW": "Low",
@@ -70,6 +147,8 @@
     "back": "Back",
     "actions": "Actions",
     "confirm": "Confirm",
-    "search": "Search..."
+    "search": "Search...",
+    "close": "Close",
+    "optional": "optional"
   }
 }
