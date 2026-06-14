@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "dashboard": "Inicio",
+    "teams": "Equipos",
+    "projects": "Proyectos",
+    "tasks": "Mis Tareas",
+    "notifications": "Notificaciones",
+    "signOut": "Cerrar sesión"
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "greeting": "Bienvenido de nuevo",
+    "completed": "Completadas",
+    "thisWeek": "esta semana",
+    "inProgress": "En progreso",
+    "activeTasks": "tareas activas",
+    "overdue": "Vencidas",
+    "needAttention": "requieren atención",
+    "teams": "Equipos",
+    "memberships": "membresías",
+    "taskDistribution": "Distribución de tareas",
+    "recentActivity": "Actividad reciente",
+    "noTasksAssigned": "Aún no tienes tareas asignadas.",
+    "noRecentTasks": "Sin tareas recientes."
+  },
+  "auth": {
+    "appName": "ProjectFlow",
+    "signIn": "Iniciar sesión",
+    "signInDesc": "Accede a tu cuenta",
+    "signingIn": "Iniciando sesión...",
+    "createAccount": "Crear cuenta",
+    "creatingAccount": "Creando cuenta...",
+    "createAccountDesc": "Crea tu cuenta",
+    "noAccount": "¿No tienes una cuenta?",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "register": "Regístrate",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "fullName": "Nombre completo",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordPlaceholder": "Mín. 8 caracteres",
+    "invalidEmail": "Correo inválido",
+    "passwordRequired": "La contraseña es requerida",
+    "nameTooShort": "El nombre debe tener al menos 2 caracteres",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "invalidCredentials": "Credenciales incorrectas",
+    "emailRegistered": "Este correo ya está registrado",
+    "accountCreated": "¡Cuenta creada exitosamente!"
+  },
+  "status": {
+    "BACKLOG": "Pendiente",
+    "TODO": "Por hacer",
+    "IN_PROGRESS": "En progreso",
+    "IN_REVIEW": "En revisión",
+    "DONE": "Completado"
+  },
+  "priority": {
+    "LOW": "Baja",
+    "MEDIUM": "Media",
+    "HIGH": "Alta",
+    "URGENT": "Urgente"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "back": "Volver",
+    "actions": "Acciones",
+    "confirm": "Confirmar",
+    "search": "Buscar..."
+  }
+}

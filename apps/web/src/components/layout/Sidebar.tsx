@@ -1,77 +1,71 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, FolderKanban, CheckSquare, Bell, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard, Users, FolderKanban,
+  CheckSquare, Bell, PanelLeftClose, PanelLeftOpen,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/auth.store';
-import { authService } from '@/lib/services/auth.service';
-import { useRouter } from 'next/navigation';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
-const nav = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/teams', label: 'Teams', icon: Users },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/tasks', label: 'My Tasks', icon: CheckSquare },
-  { href: '/notifications', label: 'Notifications', icon: Bell },
-];
+import { useUIStore } from '@/store/ui.store';
+import { useTranslations } from 'next-intl';
 
 export function Sidebar() {
+  const t = useTranslations('nav');
   const pathname = usePathname();
-  const { user, clearAuth } = useAuthStore();
-  const router = useRouter();
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
 
-  const handleLogout = async () => {
-    await authService.logout();
-    clearAuth();
-    router.push('/login');
-  };
+  const nav = [
+    { href: '/dashboard',     label: t('dashboard'),     icon: LayoutDashboard },
+    { href: '/teams',         label: t('teams'),         icon: Users },
+    { href: '/projects',      label: t('projects'),      icon: FolderKanban },
+    { href: '/tasks',         label: t('tasks'),         icon: CheckSquare },
+    { href: '/notifications', label: t('notifications'), icon: Bell },
+  ];
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 text-white flex flex-col">
-      <div className="p-6 border-b border-slate-700">
-        <h1 className="text-xl font-bold text-white">ProjectFlow</h1>
-        <p className="text-slate-400 text-xs mt-1">Project Management</p>
-      </div>
-
-      <nav className="flex-1 p-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
-              pathname === href || pathname.startsWith(href + '/')
-                ? 'bg-slate-700 text-white'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            )}
-          >
-            <Icon size={18} />
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="p-4 border-t border-slate-700">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-slate-600 text-white text-xs">
-              {user?.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
-          </div>
-        </div>
+    <aside
+      className={cn(
+        'hidden lg:flex flex-col min-h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-all duration-200 shrink-0',
+        sidebarCollapsed ? 'w-16' : 'w-60'
+      )}
+    >
+      <div className="flex items-center h-14 px-3 border-b border-slate-100 dark:border-slate-800">
+        {!sidebarCollapsed && (
+          <span className="flex-1 text-sm font-semibold text-slate-900 dark:text-white tracking-tight pl-1">
+            ProjectFlow
+          </span>
+        )}
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-slate-400 hover:text-white text-sm w-full px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+          onClick={toggleSidebar}
+          className="p-2 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-auto"
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <LogOut size={16} />
-          Sign out
+          {sidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
         </button>
       </div>
+
+      <nav className="flex-1 px-2 py-3 space-y-0.5">
+        {nav.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(href + '/');
+          return (
+            <Link
+              key={href}
+              href={href}
+              title={sidebarCollapsed ? label : undefined}
+              className={cn(
+                'flex items-center gap-2.5 px-2.5 py-2 rounded-md text-sm font-medium transition-colors',
+                sidebarCollapsed ? 'justify-center' : '',
+                active
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+              )}
+            >
+              <Icon size={17} strokeWidth={active ? 2.5 : 2} className="shrink-0" />
+              {!sidebarCollapsed && <span>{label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
     </aside>
   );
 }

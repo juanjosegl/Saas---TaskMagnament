@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "teams": "Teams",
+    "projects": "Projects",
+    "tasks": "My Tasks",
+    "notifications": "Notifications",
+    "signOut": "Sign out"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": "Good to see you",
+    "completed": "Completed",
+    "thisWeek": "this week",
+    "inProgress": "In Progress",
+    "activeTasks": "active tasks",
+    "overdue": "Overdue",
+    "needAttention": "need attention",
+    "teams": "Teams",
+    "memberships": "memberships",
+    "taskDistribution": "Task Distribution",
+    "recentActivity": "Recent Activity",
+    "noTasksAssigned": "No tasks assigned yet.",
+    "noRecentTasks": "No recent tasks."
+  },
+  "auth": {
+    "appName": "ProjectFlow",
+    "signIn": "Sign in",
+    "signInDesc": "Sign in to your account",
+    "signingIn": "Signing in...",
+    "createAccount": "Create account",
+    "creatingAccount": "Creating account...",
+    "createAccountDesc": "Create your account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Min. 8 characters",
+    "invalidEmail": "Invalid email",
+    "passwordRequired": "Password is required",
+    "nameTooShort": "Name must be at least 2 characters",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "invalidCredentials": "Invalid credentials",
+    "emailRegistered": "Email already registered",
+    "accountCreated": "Account created successfully!"
+  },
+  "status": {
+    "BACKLOG": "Backlog",
+    "TODO": "To Do",
+    "IN_PROGRESS": "In Progress",
+    "IN_REVIEW": "In Review",
+    "DONE": "Done"
+  },
+  "priority": {
+    "LOW": "Low",
+    "MEDIUM": "Medium",
+    "HIGH": "High",
+    "URGENT": "Urgent"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "search": "Search..."
+  }
+}
