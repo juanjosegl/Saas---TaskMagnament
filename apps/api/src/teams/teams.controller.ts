@@ -6,6 +6,7 @@ import { InviteMemberDto } from './dto/invite-member.dto';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 
 @ApiTags('Teams')
 @ApiBearerAuth()
@@ -36,6 +37,13 @@ export class TeamsController {
   @ApiOperation({ summary: 'Invite a member to the team' })
   invite(@Param('teamId') teamId: string, @CurrentUser() user: { id: string }, @Body() dto: InviteMemberDto) {
     return this.teamsService.inviteMember(teamId, user.id, dto);
+  }
+
+  @Public()
+  @Get('invitations/:token')
+  @ApiOperation({ summary: 'Get invitation details by token' })
+  getInvitation(@Param('token') token: string) {
+    return this.teamsService.getInvitationByToken(token);
   }
 
   @Post('invitations/:token/accept')

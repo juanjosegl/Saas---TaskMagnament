@@ -48,16 +48,28 @@ enum NotificationType {
   PROJECT_CREATED
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
 model User {
-  id             String    @id @default(uuid())
-  email          String    @unique
+  id             String       @id @default(uuid())
+  email          String       @unique
   name           String
-  password       String
+  password       String?
   avatar         String?
-  isActive       Boolean   @default(true)
+  phone          String?
+  birthDate      DateTime?
+  bio            String?
+  jobTitle       String?
+  location       String?
+  provider       AuthProvider @default(LOCAL)
+  googleId       String?      @unique
+  isActive       Boolean      @default(true)
   refreshToken   String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   teamMembers     TeamMember[]
   assignedTasks   Task[]        @relation("TaskAssignee")

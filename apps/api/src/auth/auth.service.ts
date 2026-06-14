@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcryptjs';
@@ -16,6 +17,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -24,18 +26,31 @@ export class AuthService {
 
     const password = await bcrypt.hash(dto.password, 12);
     const user = await this.prisma.user.create({
-      data: { name: dto.name, email: dto.email, password },
-      select: { id: true, name: true, email: true, createdAt: true },
+      data: {
+        name: dto.name,
+        email: dto.email,
+        password,
+        phone: dto.phone,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        bio: dto.bio,
+        jobTitle: dto.jobTitle,
+        location: dto.location,
+      },
+      select: { id: true, name: true, email: true, avatar: true, jobTitle: true, createdAt: true },
     });
 
     const tokens = await this.generateTokens(user.id, user.email);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
+
+    // Send welcome email (non-blocking)
+    this.emailService.sendWelcomeEmail({ to: user.email, name: user.name });
+
     return { user, ...tokens };
   }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user || !user.password) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
@@ -45,6 +60,39 @@ export class AuthService {
 
     const { password: _, refreshToken: __, ...safeUser } = user;
     return { user: safeUser, ...tokens };
+  }
+
+  async googleLogin(googleUser: {
+    googleId: string;
+    email: string;
+    name: string;
+    avatar?: string;
+  }) {
+    let user = await this.prisma.user.findFirst({
+      where: { OR: [{ googleId: googleUser.googleId }, { email: googleUser.email }] },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: googleUser.email,
+          name: googleUser.name,
+          avatar: googleUser.avatar,
+          googleId: googleUser.googleId,
+          provider: 'GOOGLE',
+        },
+      });
+      this.emailService.sendWelcomeEmail({ to: user.email, name: user.name });
+    } else if (!user.googleId) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { googleId: googleUser.googleId, provider: 'GOOGLE', avatar: googleUser.avatar },
+      });
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+    return { user, ...tokens };
   }
 
   async logout(userId: string) {

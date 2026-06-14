@@ -1,4 +1,7 @@
-import { Controller, Post, Body, UseGuards, Req, Res, HttpCode, HttpStatus, Get } from '@nestjs/common';
+import {
+  Controller, Post, Body, UseGuards, Req,
+  Res, HttpCode, HttpStatus, Get
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request, Response } from 'express';
@@ -8,11 +11,15 @@ import { LoginDto } from './dto/login.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @Public()
   @Post('register')
@@ -33,11 +40,27 @@ export class AuthController {
     return { user: result.user, accessToken: result.accessToken };
   }
 
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Login with Google' })
+  googleAuth() {}
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    const result = await this.authService.googleLogin(req.user as any);
+    this.setRefreshCookie(res, result.refreshToken);
+    const frontendUrl = this.configService.get('FRONTEND_URL') ?? 'http://localhost:3000'\;
+    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout current user' })
   async logout(@CurrentUser() user: { id: string }, @Res({ passthrough: true }) res: Response) {
     res.clearCookie('refresh_token');
     return this.authService.logout(user.id);
@@ -47,7 +70,6 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh access token' })
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const user = req.user as { id: string };
     const result = await this.authService.refresh(user.id);
@@ -58,7 +80,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
   me(@CurrentUser() user: unknown) {
     return user;
   }
