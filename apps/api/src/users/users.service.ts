@@ -11,6 +11,8 @@ export class UsersService {
       where: { id },
       select: {
         id: true, name: true, email: true, avatar: true,
+        phone: true, birthDate: true, bio: true,
+        jobTitle: true, location: true, provider: true,
         isActive: true, createdAt: true, updatedAt: true,
         teamMembers: {
           include: { team: { select: { id: true, name: true, slug: true } } },
@@ -24,8 +26,16 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto) {
     return this.prisma.user.update({
       where: { id },
-      data: dto,
-      select: { id: true, name: true, email: true, avatar: true, updatedAt: true },
+      data: {
+        ...dto,
+        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+      },
+      select: {
+        id: true, name: true, email: true, avatar: true,
+        phone: true, birthDate: true, bio: true,
+        jobTitle: true, location: true, provider: true,
+        updatedAt: true,
+      },
     });
   }
 }

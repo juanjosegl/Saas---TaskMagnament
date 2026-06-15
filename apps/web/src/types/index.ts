@@ -3,6 +3,12 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  phone?: string;
+  birthDate?: string;
+  bio?: string;
+  jobTitle?: string;
+  location?: string;
+  provider?: string;
   isActive: boolean;
 }
 

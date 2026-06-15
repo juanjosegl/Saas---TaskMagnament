@@ -43,7 +43,7 @@ export class AuthController {
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  @ApiOperation({ summary: 'Login with Google' })
+  @ApiOperation({ summary: 'Initiate Google OAuth' })
   googleAuth() {}
 
   @Public()
@@ -54,7 +54,10 @@ export class AuthController {
     const result = await this.authService.googleLogin(req.user as any);
     this.setRefreshCookie(res, result.refreshToken);
     const frontendUrl = this.configService.get('FRONTEND_URL') ?? 'http://localhost:3000'\;
-    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
+    const redirect = result.isNew
+      ? `${frontendUrl}/auth/callback?token=${result.accessToken}&new=true`
+      : `${frontendUrl}/auth/callback?token=${result.accessToken}`;
+    res.redirect(redirect);
   }
 
   @UseGuards(JwtAuthGuard)

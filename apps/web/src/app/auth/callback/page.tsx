@@ -13,6 +13,8 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const token = searchParams.get('token');
+    const isNew = searchParams.get('new') === 'true';
+
     if (!token) { router.replace('/login'); return; }
 
     localStorage.setItem('access_token', token);
@@ -21,7 +23,11 @@ export default function AuthCallbackPage() {
     authService.me()
       .then((user) => {
         setAuth(user, token);
-        router.replace('/dashboard');
+        if (isNew) {
+          router.replace('/complete-profile');
+        } else {
+          router.replace('/dashboard');
+        }
       })
       .catch(() => router.replace('/login'));
   }, [searchParams, router, setAuth]);
@@ -30,7 +36,7 @@ export default function AuthCallbackPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="text-center">
         <Loader2 className="animate-spin text-slate-400 mx-auto mb-3" size={32} />
-        <p className="text-sm text-slate-500">Signing you in...</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Signing you in...</p>
       </div>
     </div>
   );

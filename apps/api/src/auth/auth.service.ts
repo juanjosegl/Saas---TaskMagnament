@@ -36,13 +36,14 @@ export class AuthService {
         jobTitle: dto.jobTitle,
         location: dto.location,
       },
-      select: { id: true, name: true, email: true, avatar: true, jobTitle: true, createdAt: true },
+      select: {
+        id: true, name: true, email: true, avatar: true,
+        jobTitle: true, location: true, createdAt: true,
+      },
     });
 
     const tokens = await this.generateTokens(user.id, user.email);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
-
-    // Send welcome email (non-blocking)
     this.emailService.sendWelcomeEmail({ to: user.email, name: user.name });
 
     return { user, ...tokens };
@@ -68,11 +69,13 @@ export class AuthService {
     name: string;
     avatar?: string;
   }) {
+    let isNew = false;
     let user = await this.prisma.user.findFirst({
       where: { OR: [{ googleId: googleUser.googleId }, { email: googleUser.email }] },
     });
 
     if (!user) {
+      isNew = true;
       user = await this.prisma.user.create({
         data: {
           email: googleUser.email,
@@ -86,13 +89,13 @@ export class AuthService {
     } else if (!user.googleId) {
       user = await this.prisma.user.update({
         where: { id: user.id },
-        data: { googleId: googleUser.googleId, provider: 'GOOGLE', avatar: googleUser.avatar },
+        data: { googleId: googleUser.googleId, provider: 'GOOGLE', avatar: user.avatar ?? googleUser.avatar },
       });
     }
 
     const tokens = await this.generateTokens(user.id, user.email);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
-    return { user, ...tokens };
+    return { user, ...tokens, isNew };
   }
 
   async logout(userId: string) {
