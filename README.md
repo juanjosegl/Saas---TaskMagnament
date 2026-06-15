@@ -219,8 +219,8 @@ Full Swagger documentation available at `/api/docs` when running locally.
 ## Author
 
 **Juan Jose** — Full Stack Developer
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- LinkedIn: [linkedin.com/in/YOUR_PROFILE](https://linkedin.com/in/YOUR_PROFILE)
+- GitHub: [@juanjosegl](https://github.com/juanjosegl)
+- LinkedIn: [linkedin.com/in/juan-jose-gutierrez-lasso-303695232/](https://www.linkedin.com/in/juan-jose-gutierrez-lasso-303695232/)
 
 ---
 
