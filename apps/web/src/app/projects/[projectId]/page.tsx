@@ -52,20 +52,28 @@ export default function ProjectBoardPage() {
     queryFn: () => tasksService.getByProject(projectId),
   });
 
+  // Get team members for assignee selector
+  const teamMembers = (project as any)?.team?.members ?? [];
+
   const form = useForm<{
     title: string;
     description?: string;
     priority: TaskPriority;
-    assignToMe: boolean;
-  }>({ defaultValues: { priority: 'MEDIUM', assignToMe: true } });
+    assigneeId: string;
+  }>({ defaultValues: { priority: 'MEDIUM', assigneeId: user?.id ?? '' } });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => tasksService.create(projectId, data),
+    mutationFn: (data: any) => tasksService.create(projectId, {
+      title: data.title,
+      description: data.description || undefined,
+      priority: data.priority,
+      assigneeId: data.assigneeId || undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
       queryClient.invalidateQueries({ queryKey: ['tasks', 'mine'] });
       toast.success('Task created');
-      form.reset({ priority: 'MEDIUM', assignToMe: true });
+      form.reset({ priority: 'MEDIUM', assigneeId: user?.id ?? '' });
       setOpen(false);
     },
     onError: () => toast.error('Failed to create task'),
@@ -79,16 +87,6 @@ export default function ProjectBoardPage() {
       queryClient.invalidateQueries({ queryKey: ['tasks', 'mine'] });
     },
   });
-
-  const handleCreate = (data: any) => {
-    const payload = {
-      title: data.title,
-      description: data.description || undefined,
-      priority: data.priority,
-      assigneeId: data.assignToMe ? user?.id : undefined,
-    };
-    createMutation.mutate(payload);
-  };
 
   const tasksByStatus = (status: TaskStatus) => tasks?.filter((t) => t.status === status) ?? [];
 
@@ -104,7 +102,7 @@ export default function ProjectBoardPage() {
 
         <PageHeader
           title={loadingProject ? '...' : project?.name ?? ''}
-          description={project?.description}
+          description={(project as any)?.description}
           action={
             <Button size="sm" onClick={() => setOpen(true)} className="gap-1.5">
               <Plus size={14} /> {t('newTask')}
@@ -179,7 +177,7 @@ export default function ProjectBoardPage() {
             <DialogHeader>
               <DialogTitle className="text-base font-semibold">{t('createTask')}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4 mt-2">
+            <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4 mt-2">
               <div className="space-y-1.5">
                 <Label className="text-sm">{t('taskTitle')}</Label>
                 <Input placeholder={t('taskTitlePlaceholder')} {...form.register('title', { required: true })} />
@@ -188,26 +186,34 @@ export default function ProjectBoardPage() {
                 <Label className="text-sm">{t('description')} <span className="text-slate-400">({tc('optional')})</span></Label>
                 <Input placeholder={t('descriptionPlaceholder')} {...form.register('description')} />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t('priority')}</Label>
-                <select
-                  {...form.register('priority')}
-                  className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white"
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="URGENT">Urgent</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t('priority')}</Label>
+                  <select
+                    {...form.register('priority')}
+                    className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white"
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t('assignee')}</Label>
+                  <select
+                    {...form.register('assigneeId')}
+                    className="w-full h-9 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-white"
+                  >
+                    <option value="">Unassigned</option>
+                    {teamMembers.map((m: any) => (
+                      <option key={m.user.id} value={m.user.id}>
+                        {m.user.name}{m.user.id === user?.id ? ' (me)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  {...form.register('assignToMe')}
-                  className="rounded border-slate-300"
-                />
-                <span className="text-sm text-slate-700 dark:text-slate-300">Assign to me</span>
-              </label>
               <div className="flex gap-2 justify-end pt-1">
                 <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>{tc('cancel')}</Button>
                 <Button type="submit" size="sm" disabled={createMutation.isPending}>{t('createTask')}</Button>

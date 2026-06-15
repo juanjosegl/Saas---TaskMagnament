@@ -53,7 +53,7 @@ export class AuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.googleLogin(req.user as any);
     this.setRefreshCookie(res, result.refreshToken);
-    const frontendUrl = this.configService.get('FRONTEND_URL') ?? 'http://localhost:3000'\;
+    const frontendUrl = this.configService.get('FRONTEND_URL') ?? 'http://localhost:3000';
     const redirect = result.isNew
       ? `${frontendUrl}/auth/callback?token=${result.accessToken}&new=true`
       : `${frontendUrl}/auth/callback?token=${result.accessToken}`;

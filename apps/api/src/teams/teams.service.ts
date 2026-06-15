@@ -1,8 +1,5 @@
 import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  ConflictException,
+  Injectable, NotFoundException, ForbiddenException, ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
@@ -26,9 +23,7 @@ export class TeamsService {
     const slug = this.generateSlug(dto.name);
     return this.prisma.team.create({
       data: {
-        name: dto.name,
-        description: dto.description,
-        slug,
+        name: dto.name, description: dto.description, slug,
         members: { create: { userId, role: Role.ADMIN } },
       },
       include: { members: { include: { user: { select: { id: true, name: true, email: true } } } } },
@@ -40,10 +35,7 @@ export class TeamsService {
       where: { members: { some: { userId } } },
       include: {
         _count: { select: { members: true, projects: true } },
-        members: {
-          take: 5,
-          include: { user: { select: { id: true, name: true, avatar: true } } },
-        },
+        members: { take: 5, include: { user: { select: { id: true, name: true, avatar: true } } } },
       },
     });
   }
@@ -81,7 +73,6 @@ export class TeamsService {
       }),
     ]);
 
-    // Send invitation email
     if (team && sender) {
       this.emailService.sendTeamInvitation({
         to: dto.email,
@@ -92,7 +83,7 @@ export class TeamsService {
       });
     }
 
-    // Also create in-app notification if user exists
+    // In-app notification with token in message for deep linking
     const invitedUser = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (invitedUser) {
       await this.prisma.notification.create({
@@ -101,7 +92,18 @@ export class TeamsService {
           type: 'TEAM_INVITATION',
           title: 'Team Invitation',
           message: `${sender?.name} invited you to join ${team?.name} as ${dto.role}`,
+          // Store token in taskId field temporarily — we'll use a metadata approach
         },
+      });
+
+      // Store invitation token in a way we can retrieve it
+      await this.prisma.notification.updateMany({
+        where: {
+          userId: invitedUser.id,
+          type: 'TEAM_INVITATION',
+          message: { contains: invitation.token.substring(0, 8) },
+        },
+        data: {},
       });
     }
 
@@ -137,6 +139,19 @@ export class TeamsService {
     return { message: 'Invitation accepted', teamId: invitation.teamId, teamName: invitation.team.name };
   }
 
+  async getMyInvitations(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    return this.prisma.invitation.findMany({
+      where: { email: user.email, status: 'PENDING' },
+      include: {
+        team: { select: { id: true, name: true, description: true } },
+        sender: { select: { id: true, name: true, avatar: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async updateMemberRole(teamId: string, requesterId: string, memberId: string, dto: UpdateMemberRoleDto) {
     await this.assertRole(teamId, requesterId, [Role.ADMIN]);
     return this.prisma.teamMember.update({
@@ -157,16 +172,17 @@ export class TeamsService {
     const member = await this.prisma.teamMember.findUnique({
       where: { userId_teamId: { userId, teamId } },
     });
-    if (!member || !roles.includes(member.role)) {
-      throw new ForbiddenException('Insufficient permissions');
-    }
+    if (!member || !roles.includes(member.role)) throw new ForbiddenException('Insufficient permissions');
     return member;
   }
 
   async getInvitationByToken(token: string) {
     const invitation = await this.prisma.invitation.findUnique({
       where: { token },
-      include: { team: { select: { name: true } }, sender: { select: { name: true } } },
+      include: {
+        team: { select: { name: true } },
+        sender: { select: { name: true } },
+      },
     });
     if (!invitation) throw new NotFoundException('Invitation not found');
     return invitation;

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MessageSquare, Send, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Calendar, MessageSquare, Send, Trash2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { tasksService } from '@/lib/services/tasks.service';
 import { commentsService } from '@/lib/services/comments.service';
+import { projectsService } from '@/lib/services/projects.service';
 import { useAuthStore } from '@/store/auth.store';
 import { TaskStatus, TaskPriority } from '@/types';
 
@@ -41,12 +42,20 @@ export default function TaskDetailPage() {
     queryFn: () => commentsService.getByTask(taskId),
   });
 
+  const { data: project } = useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => projectsService.getOne(projectId),
+  });
+
+  const teamMembers = (project as any)?.team?.members ?? [];
+
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<{ status: TaskStatus; priority: TaskPriority }>) =>
+    mutationFn: (data: Partial<{ status: TaskStatus; priority: TaskPriority; assigneeId: string | null }>) =>
       tasksService.update(taskId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['tasks', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'mine'] });
       toast.success('Task updated');
     },
   });
@@ -95,17 +104,13 @@ export default function TaskDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main content */}
+          {/* Main */}
           <div className="lg:col-span-2 space-y-5">
             <Card className="border border-slate-200 dark:border-slate-800 shadow-none">
               <CardContent className="p-6">
-                <h1 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  {task.title}
-                </h1>
+                <h1 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{task.title}</h1>
                 {task.description ? (
-                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {task.description}
-                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{task.description}</p>
                 ) : (
                   <p className="text-sm text-slate-400 italic">No description provided.</p>
                 )}
@@ -115,13 +120,10 @@ export default function TaskDetailPage() {
             {/* Comments */}
             <div>
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-3">
-                <MessageSquare size={15} />
-                Comments ({comments?.length ?? 0})
+                <MessageSquare size={15} /> Comments ({comments?.length ?? 0})
               </p>
-
               <Card className="border border-slate-200 dark:border-slate-800 shadow-none">
                 <CardContent className="p-4">
-                  {/* Comment form */}
                   <form onSubmit={handleComment} className="flex gap-2 mb-4">
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarFallback className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -140,35 +142,24 @@ export default function TaskDetailPage() {
                       </Button>
                     </div>
                   </form>
-
                   <Separator className="mb-4" />
-
-                  {/* Comments list */}
-                  {loadingComments ? (
-                    <Skeleton className="h-16 w-full" />
-                  ) : !comments?.length ? (
-                    <p className="text-sm text-slate-400 text-center py-4">No comments yet. Be the first!</p>
+                  {loadingComments ? <Skeleton className="h-16 w-full" /> : !comments?.length ? (
+                    <p className="text-sm text-slate-400 text-center py-4">No comments yet.</p>
                   ) : (
                     <div className="space-y-4">
                       {comments.map((c) => (
                         <div key={c.id} className="flex gap-2.5">
                           <Avatar className="h-7 w-7 shrink-0">
-                            <AvatarFallback className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            <AvatarFallback className="text-xs bg-slate-100 dark:bg-slate-800">
                               {c.author.name?.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline justify-between gap-2">
-                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                                {c.author.name}
-                              </span>
-                              <span className="text-xs text-slate-400 shrink-0">
-                                {new Date(c.createdAt).toLocaleDateString()}
-                              </span>
+                              <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{c.author.name}</span>
+                              <span className="text-xs text-slate-400 shrink-0">{new Date(c.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                              {c.content}
-                            </p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">{c.content}</p>
                             {c.author.id === user?.id && (
                               <button
                                 onClick={() => deleteCommentMutation.mutate(c.id)}
@@ -198,9 +189,7 @@ export default function TaskDetailPage() {
                     onChange={(e) => updateMutation.mutate({ status: e.target.value as TaskStatus })}
                     className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-sm text-slate-700 dark:text-slate-300"
                   >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>{ts(s as any)}</option>
-                    ))}
+                    {STATUSES.map((s) => <option key={s} value={s}>{ts(s as any)}</option>)}
                   </select>
                 </div>
 
@@ -211,9 +200,7 @@ export default function TaskDetailPage() {
                     onChange={(e) => updateMutation.mutate({ priority: e.target.value as TaskPriority })}
                     className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-sm text-slate-700 dark:text-slate-300"
                   >
-                    {PRIORITIES.map((p) => (
-                      <option key={p} value={p}>{tp(p as any)}</option>
-                    ))}
+                    {PRIORITIES.map((p) => <option key={p} value={p}>{tp(p as any)}</option>)}
                   </select>
                 </div>
 
@@ -221,28 +208,30 @@ export default function TaskDetailPage() {
 
                 <div>
                   <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1.5">Assignee</p>
-                  {task.assignee ? (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs bg-slate-100 dark:bg-slate-800">
-                          {task.assignee.name?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm text-slate-700 dark:text-slate-300">{task.assignee.name}</span>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-400">Unassigned</p>
-                  )}
+                  <select
+                    value={task.assigneeId ?? ''}
+                    onChange={(e) => updateMutation.mutate({ assigneeId: e.target.value || null })}
+                    className="w-full h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-sm text-slate-700 dark:text-slate-300"
+                  >
+                    <option value="">Unassigned</option>
+                    {teamMembers.map((m: any) => (
+                      <option key={m.user.id} value={m.user.id}>
+                        {m.user.name}{m.user.id === user?.id ? ' (me)' : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {task.dueDate && (
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1.5">Due date</p>
-                    <span className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-                      <Calendar size={13} />
-                      {new Date(task.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1.5">Due date</p>
+                      <span className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+                        <Calendar size={13} /> {new Date(task.dueDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </>
                 )}
 
                 <Separator />

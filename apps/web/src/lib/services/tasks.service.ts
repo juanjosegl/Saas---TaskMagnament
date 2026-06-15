@@ -2,7 +2,7 @@ import api from '../api';
 import { Task, ApiResponse } from '@/types';
 
 export const tasksService = {
-  async create(projectId: string, data: Partial<Task>) {
+  async create(projectId: string, data: Partial<Task> & { assigneeId?: string }) {
     const res = await api.post<ApiResponse<Task>>(`/projects/${projectId}/tasks`, data);
     return res.data.data;
   },
@@ -14,7 +14,7 @@ export const tasksService = {
     const res = await api.get<ApiResponse<Task & { comments: any[] }>>(`/tasks/${taskId}`);
     return res.data.data;
   },
-  async update(taskId: string, data: Partial<Task>) {
+  async update(taskId: string, data: Partial<Task> & { assigneeId?: string | null }) {
     const res = await api.patch<ApiResponse<Task>>(`/tasks/${taskId}`, data);
     return res.data.data;
   },

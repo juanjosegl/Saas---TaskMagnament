@@ -16,44 +16,42 @@ export class TeamsController {
   constructor(private teamsService: TeamsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new team' })
   create(@CurrentUser() user: { id: string }, @Body() dto: CreateTeamDto) {
     return this.teamsService.create(user.id, dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get my teams' })
   findMyTeams(@CurrentUser() user: { id: string }) {
     return this.teamsService.findMyTeams(user.id);
   }
 
+  @Get('my-invitations')
+  getMyInvitations(@CurrentUser() user: { id: string }) {
+    return this.teamsService.getMyInvitations(user.id);
+  }
+
   @Get(':teamId')
-  @ApiOperation({ summary: 'Get team details' })
   findOne(@Param('teamId') teamId: string, @CurrentUser() user: { id: string }) {
     return this.teamsService.findOne(teamId, user.id);
   }
 
   @Post(':teamId/invite')
-  @ApiOperation({ summary: 'Invite a member to the team' })
   invite(@Param('teamId') teamId: string, @CurrentUser() user: { id: string }, @Body() dto: InviteMemberDto) {
     return this.teamsService.inviteMember(teamId, user.id, dto);
   }
 
   @Public()
   @Get('invitations/:token')
-  @ApiOperation({ summary: 'Get invitation details by token' })
   getInvitation(@Param('token') token: string) {
     return this.teamsService.getInvitationByToken(token);
   }
 
   @Post('invitations/:token/accept')
-  @ApiOperation({ summary: 'Accept a team invitation' })
   acceptInvitation(@Param('token') token: string, @CurrentUser() user: { id: string }) {
     return this.teamsService.acceptInvitation(token, user.id);
   }
 
   @Patch(':teamId/members/:memberId/role')
-  @ApiOperation({ summary: 'Update member role' })
   updateRole(
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,
@@ -64,7 +62,6 @@ export class TeamsController {
   }
 
   @Delete(':teamId/members/:memberId')
-  @ApiOperation({ summary: 'Remove a member from the team' })
   removeMember(
     @Param('teamId') teamId: string,
     @Param('memberId') memberId: string,

@@ -11,7 +11,7 @@ export class EmailService {
 
   constructor(private config: ConfigService) {
     this.resend = new Resend(config.get('RESEND_API_KEY'));
-    this.appUrl = config.get('APP_URL') ?? 'http://localhost:3000'\;
+    this.appUrl = config.get('APP_URL') ?? 'http://localhost:3000';
   }
 
   async sendTeamInvitation(params: {
