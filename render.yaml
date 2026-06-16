@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: projectflow-api
+    runtime: node
+    rootDir: apps/api
+    buildCommand: npm install --include=dev --legacy-peer-deps && ./node_modules/.bin/prisma generate && ./node_modules/.bin/prisma migrate deploy
+    startCommand: node dist/src/main
+    envVars:
+      - key: NODE_VERSION
+        value: 20.20.2
