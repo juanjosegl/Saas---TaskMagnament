@@ -53,7 +53,7 @@ export default function ProjectBoardPage() {
   });
 
   // Get team members for assignee selector
-  const teamMembers = (project as any)?.team?.members ?? [];
+  const teamMembers = ((project as any)?.team?.members ?? []).filter((m: any) => m?.user?.id);
 
   const form = useForm<{
     title: string;

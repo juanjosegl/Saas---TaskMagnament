@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { tasksService } from '@/lib/services/tasks.service';
+import { tasksService, type TaskUpdatePayload } from '@/lib/services/tasks.service';
 import { commentsService } from '@/lib/services/comments.service';
 import { projectsService } from '@/lib/services/projects.service';
 import { useAuthStore } from '@/store/auth.store';
@@ -47,10 +47,10 @@ export default function TaskDetailPage() {
     queryFn: () => projectsService.getOne(projectId),
   });
 
-  const teamMembers = (project as any)?.team?.members ?? [];
+  const teamMembers = ((project as any)?.team?.members ?? []).filter((m: any) => m?.user?.id);
 
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<{ status: TaskStatus; priority: TaskPriority; assigneeId: string | null }>) =>
+    mutationFn: (data: TaskUpdatePayload) =>
       tasksService.update(taskId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['task', taskId] });
